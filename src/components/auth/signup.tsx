@@ -2,14 +2,11 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
 import Link from "next/link";
 import { useState } from "react";
-
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-
 import {
     Form,
     FormControl,
@@ -19,10 +16,11 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { toast } from "sonner";
-// import { registerUser } from "@/actions/register";
 import { useRouter } from "next/navigation";
 import { Icons } from "../global/icons";
 import { AppLogoIcon } from "../global/app-logo-icon";
+import { registerUser } from "../../../actions/user";
+import { auth } from "@/lib/auth";
 
 const registerSchema = z.object({
     firstName: z.string().min(2, "Firstname must be at least 2 characters"),
@@ -45,10 +43,10 @@ export default function Signup() {
   const form = useForm<RegisterFormValues>({
         resolver: zodResolver(registerSchema),
         defaultValues: {
-        firstName: "",
-        lastName: "",
-        email: "",
-        password: "",
+            firstName: "",
+            lastName: "",
+            email: "",
+            password: "",
         },
   });
 
@@ -58,18 +56,27 @@ export default function Signup() {
         setIsSubmitting(true);
 
         try {
-            // const result = await registerUser(data);
-            // if (result.success) {
-            //   toast.success("Success!", {
-            //     description: result.message,
-            //   });
-            //   // Optional: redirect to login page
-            router.push("/dashboard");
-            // } else {
-            //   toast.error("Error", {
-            //     description: result.message,
-            //   });
-            // }
+            const result = await registerUser(data);
+            await auth.api.signUpEmail({
+                returnHeaders: true,
+                body: {
+                    email: data.email,
+                    password: data.password,
+                    name: `${data.firstName} ${data.lastName}`,
+                    firstName: data.firstName,
+                    lastName: data.lastName
+                },
+            });
+            if (result.success) {
+                toast.success("Success!", {
+                    description: "User created successfully",
+                });
+                router.push("/dashboard");
+            } else {
+                toast.error("Error", {
+                    description: result.error,
+                });
+            }
         } catch (error) {
             toast.error("Error", {
             description: "Something went wrong. Please try again.",
