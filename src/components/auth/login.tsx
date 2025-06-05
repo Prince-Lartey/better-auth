@@ -19,8 +19,9 @@ import * as z from "zod";
 
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { Icons } from "../global/icons";
 import { AppLogoIcon } from "../global/app-logo-icon";
+import { loginUser } from "../../../actions/user";
+import SocialButtons from "./SocialButtons";
 
 // Define the validation schema with Zod
 const loginSchema = z.object({
@@ -51,18 +52,19 @@ export default function Login() {
     console.log(values)
 
     try {
-      // const result = await loginUser(values);
-      // if (result.success) {
-      //   toast.success("Success!", {
-      //     description: result.message,
-      //   });
-      //   // Optional: redirect to login page
-      router.push("/dashboard");
-      // } else {
-      //   toast.error("Error", {
-      //     description: result.message,
-      //   });
-      // }
+        const result = await loginUser(values);
+        if (result.success) {
+            toast.success("Success!", {
+                description: "Login successful",
+            });
+            router.push("/dashboard");
+        } else {
+            if (result.status === "UNAUTHORIZED") {
+                toast.error("Wrong Credentials", {
+                    description: result.error,
+                });
+            }
+        }
     } catch (error) {
         toast.error("Error", {
             description: "Something went wrong. Please try again.",
@@ -87,16 +89,7 @@ export default function Login() {
                         <p className="text-sm">Welcome back! Sign in to continue</p>
                     </div>
 
-                    <div className="mt-6 grid grid-cols-2 gap-3">
-                        <Button type="button" variant="outline">
-                            <Icons.google />
-                            <span>Google</span>
-                        </Button>
-                        <Button type="button" variant="outline">
-                            <Icons.gitHub />
-                            <span>Github</span>
-                        </Button>
-                    </div>
+                    <SocialButtons />
 
                     <hr className="my-4 border-dashed" />
 

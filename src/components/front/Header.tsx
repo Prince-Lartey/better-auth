@@ -3,6 +3,9 @@
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import React, { useEffect, useState } from 'react'
 import { Dialog, DialogPanel } from "@headlessui/react";
+import { useSession } from '@/lib/auth-client';
+import Link from 'next/link';
+import { Button } from '../ui/button';
 
 const navigation = [
     { name: "Solutions", href: "#" },
@@ -14,6 +17,8 @@ const navigation = [
 export default function Header() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
+
+    const session = useSession()
     
     // Add scroll detection for navbar animation
     useEffect(() => {
@@ -60,20 +65,28 @@ export default function Header() {
                             </a>
                         ))}
                     </div>
-                    <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:gap-x-4">
-                        <a
-                            href="/login"
-                            className="text-sm font-medium text-gray-900 hover:text-indigo-600 transition-colors flex items-center"
-                        >
-                            Log in
-                        </a>
-                        <a
-                            href="/signup"
-                            className="text-sm font-medium px-4 py-2 bg-indigo-50 text-indigo-600 rounded-full hover:bg-indigo-100 transition-colors"
-                        >
-                            Sign up free
-                        </a>
-                    </div>
+                    {session ? (
+                        <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:gap-x-4">
+                            <Button asChild variant={"ghost"} className='text-blue-500 text-sm font-medium hover:text-indigo-600 transition-colors flex items-center'>
+                                <Link href="/dashboard">Dashboard</Link>
+                            </Button>
+                        </div>
+                    ) : (
+                        <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:gap-x-4">
+                            <Link
+                                href="/login"
+                                className="text-sm font-medium text-gray-900 hover:text-indigo-600 transition-colors flex items-center"
+                            >
+                                Log in
+                            </Link>
+                            <Link
+                                href="/signup"
+                                className="text-sm font-medium px-4 py-2 bg-indigo-50 text-indigo-600 rounded-full hover:bg-indigo-100 transition-colors"
+                            >
+                                Sign up free
+                            </Link>
+                        </div>
+                    )}
                 </nav>
                 <Dialog
                     open={mobileMenuOpen}

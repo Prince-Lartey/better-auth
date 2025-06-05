@@ -17,10 +17,9 @@ import {
 } from "@/components/ui/form";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { Icons } from "../global/icons";
 import { AppLogoIcon } from "../global/app-logo-icon";
 import { registerUser } from "../../../actions/user";
-import { auth } from "@/lib/auth";
+import SocialButtons from "./SocialButtons";
 
 const registerSchema = z.object({
     firstName: z.string().min(2, "Firstname must be at least 2 characters"),
@@ -52,36 +51,28 @@ export default function Signup() {
 
   // Handle form submission
     const onSubmit = async (data: RegisterFormValues) => {
-        console.log(data);
         setIsSubmitting(true);
 
         try {
             const result = await registerUser(data);
-            await auth.api.signUpEmail({
-                returnHeaders: true,
-                body: {
-                    email: data.email,
-                    password: data.password,
-                    name: `${data.firstName} ${data.lastName}`,
-                    firstName: data.firstName,
-                    lastName: data.lastName
-                },
-            });
+            
             if (result.success) {
                 toast.success("Success!", {
                     description: "User created successfully",
                 });
                 router.push("/dashboard");
             } else {
-                toast.error("Error", {
-                    description: result.error,
-                });
+                if (result.status === "UNPROCESSABLE_ENTITY") {
+                    toast.error("Email Exists", {
+                        description: result.error,
+                    });
+                }
             }
         } catch (error) {
             toast.error("Error", {
-            description: "Something went wrong. Please try again.",
-        });
-        console.log(error);
+                description: "Something went wrong. Please try again.",
+            });
+            console.log(error);
         } finally {
             setIsSubmitting(false);
         }
@@ -101,16 +92,7 @@ export default function Signup() {
                         <p className="text-sm">Welcome! Create an account to get started</p>
                     </div>
 
-                    <div className="mt-6 grid grid-cols-2 gap-3">
-                        <Button type="button" variant="outline">
-                            <Icons.google />
-                            <span>Google</span>
-                        </Button>
-                        <Button type="button" variant="outline">
-                            <Icons.gitHub />
-                            <span>Github</span>
-                        </Button>
-                    </div>
+                    <SocialButtons />
 
                     <hr className="my-4 border-dashed" />
 

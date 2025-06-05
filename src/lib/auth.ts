@@ -22,9 +22,13 @@ export const auth = betterAuth({
             clientId: process.env.GITHUB_CLIENT_ID as string, 
             clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
             mapProfileToUser: (profile) => {
+                const fullName = profile.name || profile.login || '';
+                const [firstName, ...rest] = fullName.split(" ");
+                const lastName = rest.join(" ") || "GitHubUser"; // fallback if no last name
+
                 return {
-                    firstName: profile.name.split(" ")[0],
-                    lastName: profile.name.split(" ")[1],
+                    firstName: firstName,
+                    lastName
                 };
             },
         },
@@ -44,7 +48,6 @@ export const auth = betterAuth({
             role: {
                 type: "string",
                 required: false,
-                defaultValue: "user",
                 input: false, // don't allow user to set role
             },
             firstName: {
